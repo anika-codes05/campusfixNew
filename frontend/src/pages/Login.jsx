@@ -54,6 +54,7 @@ export default function Login() {
               <input
                 type="email"
                 required
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@kiet.edu"
@@ -65,6 +66,7 @@ export default function Login() {
               <input
                 type="password"
                 required
+                autoComplete="off"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
