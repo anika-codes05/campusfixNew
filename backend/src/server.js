@@ -37,9 +37,9 @@ async function start() {
 
     const server = http.createServer(app);
     initSocket(server);
-    server.listen(PORT, () => {
-      console.log(`CampusFix backend listening on http://localhost:${PORT}`);
-    });
+   server.listen(PORT, '0.0.0.0', () => {
+  console.log(`CampusFix backend listening on port ${PORT}`);
+});
   } catch (err) {
     console.error('Failed to connect to MongoDB:', err.message);
     process.exit(1);
