@@ -21,6 +21,18 @@ export async function adminGetIssues(params = {}) {
   return api.request(`/api/admin/issues${s ? `?${s}` : ''}`);
 }
 
+export async function getStudents() {
+  return api.request('/api/admin/students');
+}
+
+export async function uploadStudents(rollNumbers) {
+  return api.request('/api/admin/students/upload', { method: 'POST', body: { rollNumbers } });
+}
+
+export async function deleteStudent(id) {
+  return api.request(`/api/admin/students/${id}`, { method: 'DELETE' });
+}
+
 export async function getUsers() {
   return api.request('/api/admin/users');
 }

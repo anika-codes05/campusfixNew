@@ -7,6 +7,8 @@ jest.mock('../src/models/User', () => {
   return User;
 });
 
+jest.mock('../src/models/AllowedStudent', () => ({ findOne: jest.fn() }));
+
 jest.mock('../src/models/Issue', () => {
   const Issue = {};
   Issue.CATEGORIES = ['electrical', 'plumbing', 'mess', 'infrastructure', 'other'];
@@ -20,6 +22,7 @@ process.env.JWT_SECRET = 'test-secret';
 
 const jwt = require('jsonwebtoken');
 const User = require('../src/models/User');
+const AllowedStudent = require('../src/models/AllowedStudent');
 const Issue = require('../src/models/Issue');
 const app = require('../src/app');
 
@@ -29,14 +32,15 @@ describe('authentication API', () => {
   test('registers a user and returns a seven-day JWT', async () => {
     const user = {
       _id: '507f1f77bcf86cd799439011',
-      toSafeJSON: () => ({ _id: '507f1f77bcf86cd799439011', email: 'student@example.com' }),
+      toSafeJSON: () => ({ _id: '507f1f77bcf86cd799439011', rollNumber: '2300290100001' }),
     };
+    AllowedStudent.findOne.mockResolvedValue({ rollNumber: '2300290100001', save: jest.fn() });
     User.findOne.mockResolvedValue(null);
     User.create.mockResolvedValue(user);
 
     const response = await request(app).post('/api/auth/register').send({
       name: 'Student',
-      email: 'student@example.com',
+      rollNumber: '2300290100001',
       password: 'password123',
     });
 
@@ -49,12 +53,25 @@ describe('authentication API', () => {
     User.findOne.mockResolvedValue(null);
 
     const response = await request(app).post('/api/auth/login').send({
-      email: 'missing@example.com',
+      rollNumber: '9999999999',
       password: 'password123',
     });
 
     expect(response.status).toBe(401);
-    expect(response.body.message).toBe('Invalid email or password.');
+    expect(response.body.message).toBe('Invalid roll number or password.');
+  });
+});
+
+describe('registration whitelist', () => {
+  test('rejects a roll number that is not on the allowed list', async () => {
+    AllowedStudent.findOne.mockResolvedValue(null);
+    const response = await request(app).post('/api/auth/register').send({
+      name: 'Outsider',
+      rollNumber: 'NOTALLOWED1',
+      password: 'password123',
+    });
+    expect(response.status).toBe(403);
+    expect(User.create).not.toHaveBeenCalled();
   });
 });
 

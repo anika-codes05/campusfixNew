@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { query } = require('express-validator');
 const Issue = require('../models/Issue');
 const User = require('../models/User');
+const AllowedStudent = require('../models/AllowedStudent');
 const auth = require('../middleware/auth');
 const adminOnly = require('../middleware/admin');
 const validate = require('../middleware/validate');
@@ -74,7 +75,7 @@ router.get('/overdue', auth, adminOnly, async (req, res) => {
       status: { $in: ['reported', 'in_progress'] },
       createdAt: { $lte: olderThan },
     })
-      .populate('reportedBy', 'name email')
+      .populate('reportedBy', 'name rollNumber')
       .populate('assignedTo', 'name team')
       .sort({ createdAt: 1 });
 
@@ -119,14 +120,14 @@ router.get('/issues', [
     let total;
     if (sort === 'upvotes') {
       issues = await Issue.find(query)
-        .populate('reportedBy', 'name email')
+        .populate('reportedBy', 'name rollNumber')
         .populate('assignedTo', 'name team');
       total = issues.length;
       issues.sort((a, b) => b.upvotes.length - a.upvotes.length || new Date(b.createdAt) - new Date(a.createdAt));
     } else {
       total = await Issue.countDocuments(query);
       issues = await Issue.find(query)
-        .populate('reportedBy', 'name email')
+        .populate('reportedBy', 'name rollNumber')
         .populate('assignedTo', 'name team')
         .sort(sortOpts)
         .skip((page - 1) * limit)
@@ -210,7 +211,7 @@ router.patch('/users/:id/team', auth, adminOnly, async (req, res) => {
 router.get('/export', auth, adminOnly, async (req, res) => {
   try {
     const issues = await Issue.find()
-      .populate('reportedBy', 'name email')
+      .populate('reportedBy', 'name rollNumber')
       .populate('assignedTo', 'name')
       .sort({ createdAt: -1 });
 
@@ -227,7 +228,7 @@ router.get('/export', auth, adminOnly, async (req, res) => {
       i._id, i.title, i.description, i.category, i.affectedCount || 1, i.status, i.priority,
       i.location.blockName, i.location.floorRoom, i.location.lat, i.location.lng,
       i.upvotes.length,
-      i.reportedBy.map((r) => r.email).join('; '),
+      i.reportedBy.map((r) => r.rollNumber).join('; '),
       i.assignedTo ? i.assignedTo.name : '',
       new Date(i.createdAt).toISOString(),
       i.resolvedAt ? new Date(i.resolvedAt).toISOString() : '',
@@ -240,6 +241,49 @@ router.get('/export', auth, adminOnly, async (req, res) => {
     return res.status(200).send(`\uFEFF` + csv);
   } catch (err) {
     return res.status(500).json({ message: 'Export failed.', error: err.message });
+  }
+});
+
+// ---- Allowed students (roll number whitelist) ----
+
+// GET /api/admin/students
+router.get('/students', auth, adminOnly, async (req, res) => {
+  try {
+    const students = await AllowedStudent.find().sort({ rollNumber: 1 }).lean();
+    return res.json(students);
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to load students.', error: err.message });
+  }
+});
+
+// POST /api/admin/students/upload  body: { rollNumbers: ['2300290100001', ...] }
+router.post('/students/upload', auth, adminOnly, async (req, res) => {
+  try {
+    const list = Array.isArray(req.body.rollNumbers) ? req.body.rollNumbers : [];
+    const clean = [...new Set(
+      list.map((r) => String(r).trim().toUpperCase()).filter((r) => /^[A-Z0-9]{4,20}$/.test(r))
+    )];
+    if (clean.length === 0) {
+      return res.status(400).json({ message: 'No valid roll numbers found in the file.' });
+    }
+    const result = await AllowedStudent.bulkWrite(
+      clean.map((rollNumber) => ({
+        updateOne: { filter: { rollNumber }, update: { $setOnInsert: { rollNumber } }, upsert: true },
+      }))
+    );
+    return res.json({ received: clean.length, added: result.upsertedCount });
+  } catch (err) {
+    return res.status(500).json({ message: 'Upload failed.', error: err.message });
+  }
+});
+
+// DELETE /api/admin/students/:id
+router.delete('/students/:id', auth, adminOnly, async (req, res) => {
+  try {
+    await AllowedStudent.findByIdAndDelete(req.params.id);
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ message: 'Delete failed.', error: err.message });
   }
 });
 

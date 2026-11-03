@@ -3,6 +3,8 @@ const http = require('http');
 const mongoose = require('mongoose');
 const app = require('./app');
 const Issue = require('./models/Issue');
+const User = require('./models/User');
+const AllowedStudent = require('./models/AllowedStudent');
 const { initSocket } = require('./socket');
 
 const PORT = process.env.PORT || 5000;
@@ -23,6 +25,10 @@ async function start() {
     await mongoose.connect(MONGO_URI);
     console.log('Connected to MongoDB.');
     try {
+      // Old accounts used email; drop that index so roll-number users can be created.
+      try { await User.collection.dropIndex('email_1'); } catch (e) { /* not present */ }
+      await User.ensureIndexes();
+      await AllowedStudent.ensureIndexes();
       await Issue.ensureIndexes();
       console.log('MongoDB indexes ensured.');
     } catch (err) {

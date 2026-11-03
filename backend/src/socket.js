@@ -26,7 +26,7 @@ function initSocket(httpServer) {
   });
 
   io.on('connection', (socket) => {
-    console.log(`Socket connected: ${socket.user.email}`);
+    console.log(`Socket connected: ${socket.user.rollNumber}`);
   });
 
   return io;

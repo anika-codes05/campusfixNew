@@ -10,6 +10,7 @@ import {
 } from '../api/admin';
 import { CATEGORIES, STATUSES, TEAMS, timeAgo } from '../constants';
 import Loader from '../components/Loader';
+import StudentWhitelist from '../components/StudentWhitelist';
 import AdminTable from '../components/AdminTable';
 import IssueMap from '../components/IssueMap';
 import { StatCard, CategoryBreakdown, MiniBar, OverdueList } from '../components/AdminCharts';
@@ -353,6 +354,8 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      <StudentWhitelist />
+
       <div className="mt-10">
         <button
           onClick={() => setShowUsers((s) => !s)}
@@ -367,7 +370,7 @@ export default function AdminDashboard() {
               <thead>
                 <tr className="border-b border-[#E4EEEC] bg-[#F4FAF9] text-xs uppercase text-[#5C6B6E]">
                   <th className="px-4 py-3">User</th>
-                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Roll No.</th>
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Team</th>
                   <th className="px-4 py-3">Joined</th>
@@ -384,7 +387,7 @@ export default function AdminDashboard() {
                         {u.name}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[#5C6B6E]">{u.email}</td>
+                    <td className="px-4 py-3 text-[#5C6B6E]">{u.rollNumber}</td>
                     <td className="px-4 py-3">
                       <select
                         value={u.role}

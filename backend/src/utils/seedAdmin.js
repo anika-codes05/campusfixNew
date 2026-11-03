@@ -10,21 +10,21 @@ async function seedAdmin() {
   }
 
   const name = process.env.ADMIN_NAME || 'Campus Admin';
-  const email = (process.env.ADMIN_EMAIL || 'admin@kiet.edu').toLowerCase();
+  const rollNumber = (process.env.ADMIN_ROLL || 'ADMIN001').toUpperCase();
   const password = process.env.ADMIN_PASSWORD || 'changeme123';
   const team = process.env.ADMIN_TEAM || 'general';
 
   try {
     await mongoose.connect(uri);
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ rollNumber });
     if (existing) {
-      console.log(`Admin already exists for ${email}. Updating role to admin.`);
+      console.log(`Admin already exists for ${rollNumber}. Updating role to admin.`);
       existing.role = 'admin';
       existing.team = team;
       await existing.save();
     } else {
-      await User.create({ name, email, password, role: 'admin', team });
-      console.log(`Created admin: ${email}`);
+      await User.create({ name, rollNumber, password, role: 'admin', team });
+      console.log(`Created admin: ${rollNumber}`);
     }
     console.log('Seed complete.');
   } catch (err) {

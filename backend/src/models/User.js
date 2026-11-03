@@ -4,11 +4,9 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    email: {
+    rollNumber: {
       type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
+      uppercase: true,
       trim: true,
     },
     password: { type: String, required: true, minlength: 6 },
@@ -20,6 +18,13 @@ const userSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
+);
+
+// Unique only for users that actually have a roll number, so old email-era
+// accounts (no roll number) don't clash with each other.
+userSchema.index(
+  { rollNumber: 1 },
+  { unique: true, partialFilterExpression: { rollNumber: { $type: 'string' } } }
 );
 
 userSchema.pre('save', async function (next) {
@@ -36,7 +41,7 @@ userSchema.methods.toSafeJSON = function () {
   return {
     _id: this._id,
     name: this.name,
-    email: this.email,
+    rollNumber: this.rollNumber,
     role: this.role,
     team: this.team,
     createdAt: this.createdAt,

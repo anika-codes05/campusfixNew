@@ -12,8 +12,8 @@ const { emitIssueNew, emitIssueUpdated, emitIssueDeleted, emitNotification } = r
 const { haversineDistanceMeters } = require('../utils/haversine');
 
 const POPULATE = [
-  { path: 'reportedBy', select: 'name email role' },
-  { path: 'assignedTo', select: 'name email role team' },
+  { path: 'reportedBy', select: 'name rollNumber role' },
+  { path: 'assignedTo', select: 'name rollNumber role team' },
   { path: 'timeline.by', select: 'name role' },
   { path: 'comments.user', select: 'name role' },
 ];

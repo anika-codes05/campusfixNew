@@ -10,7 +10,7 @@ export default function Register() {
   const toast = useToast();
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +24,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const data = await register({ name, email, password });
+      const data = await register({ name, rollNumber, password });
       setAuth(data);
       toast('Account created — welcome to CampusFix!', 'success');
       navigate('/', { replace: true });
@@ -66,13 +66,13 @@ export default function Register() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-[#1B2A2E]">Email</label>
+              <label className="mb-1 block text-sm font-medium text-[#1B2A2E]">Roll number</label>
               <input
-                type="email"
+                type="text"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@kiet.edu"
+                value={rollNumber}
+                onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
+                placeholder="Your roll / registration number"
                 className="w-full rounded-xl border border-[#E4EEEC] bg-[#F4FAF9] px-4 py-2.5 text-[#1B2A2E] outline-none transition-colors focus:border-[#028090]"
               />
             </div>

@@ -9,7 +9,7 @@ export default function Login() {
   const { setAuth } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,7 +19,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const data = await login({ email, password });
+      const data = await login({ rollNumber, password });
       setAuth(data);
       toast('Welcome back!', 'success');
       navigate(data.role === 'admin' ? '/admin' : '/', { replace: true });
@@ -50,14 +50,14 @@ export default function Login() {
 
           <form onSubmit={handle} className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-[#1B2A2E]">Email</label>
+              <label className="mb-1 block text-sm font-medium text-[#1B2A2E]">Roll number</label>
               <input
-                type="email"
+                type="text"
                 required
                 autoComplete="off"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@kiet.edu"
+                value={rollNumber}
+                onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
+                placeholder="Your roll / registration number"
                 className="w-full rounded-xl border border-[#E4EEEC] bg-[#F4FAF9] px-4 py-2.5 text-[#1B2A2E] outline-none transition-colors focus:border-[#028090]"
               />
             </div>
